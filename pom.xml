@@ -66,6 +66,36 @@
             <version>${vaadin.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.vaadin.addons</groupId>
+            <artifactId>delayedbutton</artifactId>
+            <version>2.0.1</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- compiler module contains GWT compiler, run manually with exec plugin -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-client-compiler</artifactId>
+            <version>${vaadin.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <!-- Exclude Jetty stuff that we don't use and which will conflict
+                    with other test dependencies -->
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-servlets</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-util</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
     <repositories>
         <repository>
@@ -153,38 +183,41 @@
                     <releaseProfiles>directorypackage</releaseProfiles>
                 </configuration>
             </plugin>
+            <!-- Use GWT compiler with exec plugin -->
             <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>vaadin-maven-plugin</artifactId>
-                <version>${vaadin.version}</version>
-                <configuration>
-                    <webappDirectory>${project.build.directory}/testwebapp/VAADIN/widgetsets</webappDirectory>
-                    <extraJvmArgs>-Xmx1024M -Xss512m -XX:MaxPermSize=1024m</extraJvmArgs>
-                    <hostedWebapp>${project.build.directory}/testwebapp</hostedWebapp>
-                    <noServer>true</noServer>
-                    <runTarget>http://localhost:9998/</runTarget>
-                    <draftCompile>true</draftCompile>
-                    <style>PRETTY</style>
-                    <module>org.vaadin.vehje.Widgetset</module>
-                    <!-- If you do lots of e.g. plain css changes and don't wish to use 
-                    hosted mode, you can force compile easily with uncommenting following rule -->
-                    <!-- <force>true</force> -->
-                    <strict>true</strict>
-           </configuration>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.5.0</version>
                 <executions>
                     <execution>
-                        <id>testwidgetset</id>
-                        <phase>test-compile</phase>
                         <goals>
-                            <goal>compile</goal>
+                            <goal>exec</goal>
                         </goals>
+                        <phase>test-compile</phase>
                         <configuration>
-                            <skip>${skipTests}</skip>
+                            <classpathScope>test</classpathScope>
+                            <arguments>
+                                <argument>-war</argument>
+                                <argument>target/testwebapp/VAADIN/widgetsets</argument>
+                                <argument>TestWidgetset</argument>
+                            </arguments>-->
+                            <executable>java</executable>
+                            <classpathScope>test</classpathScope>
+                            <arguments>
+                                <argument>-Xmx2g</argument>
+                                <argument>-classpath</argument>
+                                <classpath/>
+                                <argument>com.google.gwt.dev.Compiler</argument>
+                                <argument>-war</argument>
+                                <argument>target/testwebapp/VAADIN/widgetsets</argument>
+                                <argument>TestWidgetset</argument>
+                            </arguments>
                         </configuration>
+                            
                     </execution>
                 </executions>
             </plugin>
-            <!-- build javadocs during development builds as well to 
+          <!-- build javadocs during development builds as well to 
              show javadoc syntax issues before release. Remove this 
              to speed up the build a bit.
             -->
